@@ -20,5 +20,14 @@ There are several examples that may be worth checking out
 ### Colored Cube
 Simple example showing a cube with differently colored faces. Run with `cargo run --example colored_cube`.
 
+![Colored Cube](/assets/colored_cube.JPG)
+
+### Textured Cube
+Simple example showing a textured cube. Run with `cargo run --example textured_cube`.
+
+![Textured Cube](/assets/textured_cube.JPG)
+
 ### Lighted Sphere
 Simple sphere lit by a single light source. Run with `cargo run --example lighted_sphere`.
+
+![Lighted Sphere](/assets/lighted_sphere.JPG)
