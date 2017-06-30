@@ -7,6 +7,7 @@ use dust::linalg::{Matrix4, Vector3, Vector4, Matrix3};
 use dust::linalg;
 use dust::opengl;
 
+/// Draws a colored sphere, lit by a single light source
 fn main() {
     println!("started!");
     let events_loop = glutin::EventsLoop::new();
@@ -68,8 +69,13 @@ fn main() {
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
     }
 
+    // create a model matrix
     let mut model         = Matrix4::new();
+
+    // create a model view matrix
     let mut modelview     = Matrix4::new();
+
+    // create normal matrix
     let mut normal_matrix = Matrix3::new();
 
     let mut alpha     = 0.0;
@@ -118,6 +124,8 @@ fn main() {
     }
 }
 
+/// Wrapper struct for shader program. Also serves as cache for uniform and attrib buffer
+/// locations.
 struct LightShader {
     program: Program,
     projection_uniform_loc: u8,
