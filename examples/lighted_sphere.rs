@@ -2,6 +2,8 @@ extern crate gl;
 extern crate glutin;
 extern crate dust;
 
+mod util;
+
 use dust::opengl::program::Program;
 use dust::linalg::{Matrix4, Vector3, Vector4, Matrix3};
 use dust::linalg;
@@ -10,22 +12,8 @@ use dust::opengl;
 /// Draws a colored sphere, lit by a single light source
 fn main() {
     println!("started!");
-    let events_loop = glutin::EventsLoop::new();
 
-    let window = glutin::WindowBuilder::new()
-        .with_title("Lighted Sphere".to_string())
-        .with_dimensions(1024, 768)
-        .with_vsync()
-        .build(&events_loop)
-        .unwrap();
-
-    unsafe {
-        window.make_current()
-    }.unwrap();
-
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
-
-    opengl::error();
+    let (events_loop, window) = util::init();
 
     let shader = LightShader::new();
 
@@ -82,22 +70,8 @@ fn main() {
 
     let mut running   = true;
     while running {
-        events_loop.poll_events(|event1| {
-            //println!("stuff: {:?}", event1);
-            match event1 {
-                glutin::Event::WindowEvent { event, .. } => match event {
-                    glutin::WindowEvent::Closed => {
-                        running = false;
-                    },
-
-                    glutin::WindowEvent::KeyboardInput(_, _, Some(glutin::VirtualKeyCode::Escape), _) => {
-                        //println!("GRRR");
-                        running = false;
-                    },
-
-                    _ => ()
-                }
-            }
+        events_loop.poll_events(|event| {
+            running = !util::shall_stop(event);
         });
 
         unsafe {
@@ -174,7 +148,25 @@ impl LightShader {
     }
 
 }
+/*
+fn shall_stop(event1: glutin::Event) -> bool {
+    match event1 {
+        glutin::Event::WindowEvent { event, .. } => match event {
+            glutin::WindowEvent::Closed => {
+                return true;
+            },
 
+            glutin::WindowEvent::KeyboardInput(_, _, Some(glutin::VirtualKeyCode::Escape), _) => {
+                //println!("GRRR");
+                return true;
+            },
+
+            _ => ()
+        }
+    }
+
+    false
+}*/
 
 const VERTEX_SHADER_SRC : &'static [u8] = b"
 #version 100
