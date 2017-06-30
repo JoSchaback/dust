@@ -18,7 +18,7 @@ Vectors and Matrices. They are built for speed and easy of use.
 There are several examples that may be worth checking out
 
 ### Colored Cube
-Simple example showing a cube with differently colored faces.
+Simple example showing a cube with differently colored faces. Run with `cargo run --example colored_cube`.
 
 ### Lighted Sphere
-Simple sphere lit by a single light source.
+Simple sphere lit by a single light source. Run with `cargo run --example lighted_sphere`.
