@@ -148,28 +148,10 @@ impl LightShader {
     }
 
 }
-/*
-fn shall_stop(event1: glutin::Event) -> bool {
-    match event1 {
-        glutin::Event::WindowEvent { event, .. } => match event {
-            glutin::WindowEvent::Closed => {
-                return true;
-            },
-
-            glutin::WindowEvent::KeyboardInput(_, _, Some(glutin::VirtualKeyCode::Escape), _) => {
-                //println!("GRRR");
-                return true;
-            },
-
-            _ => ()
-        }
-    }
-
-    false
-}*/
 
 const VERTEX_SHADER_SRC : &'static [u8] = b"
 #version 100
+precision highp float;
 
 uniform mat4 projection;
 uniform mat4 modelView;
@@ -194,6 +176,7 @@ void main() {
 
 const FRAGMENT_SHADER_SRC : &'static [u8] = b"
 #version 100
+precision highp float;
 
 uniform vec3 lightDirectionInEyeSpace;
 
