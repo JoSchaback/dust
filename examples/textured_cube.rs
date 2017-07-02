@@ -13,7 +13,7 @@ use std::boxed::Box;
 
 const VERTEX_SHADER_SRC : &'static [u8] = b"
 #version 100
-
+precision highp float;
 uniform mat4 projection;
 uniform mat4 modelView;
 
@@ -30,7 +30,7 @@ void main() {
 
 const FRAGMENT_SHADER_SRC : &'static [u8] = b"
 #version 100
-
+precision highp float;
 uniform sampler2D tex;
 
 varying vec2 v_uv;
