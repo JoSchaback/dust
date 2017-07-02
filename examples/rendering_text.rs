@@ -4,7 +4,8 @@ extern crate dust;
 
 mod util;
 
-use dust::opengl::{Texture};
+use dust::opengl::{Texture, AttribArrayBuilder, AttribType};
+use dust::opengl::mesh::{Face,Mesh};
 use dust::opengl::program::Program;
 use dust::linalg::{Matrix4, Vector3};
 use dust::linalg;
@@ -13,7 +14,7 @@ use std::boxed::Box;
 
 const VERTEX_SHADER_SRC : &'static [u8] = b"
 #version 100
-
+precision highp float;
 uniform mat4 projection;
 uniform mat4 modelView;
 
@@ -30,7 +31,7 @@ void main() {
 
 const FRAGMENT_SHADER_SRC : &'static [u8] = b"
 #version 100
-
+precision highp float;
 uniform sampler2D tex;
 
 varying vec2 v_uv;
@@ -42,11 +43,28 @@ void main() {
 
 fn main() {
     println!("started!");
-    let (events_loop, window) = util::init();
+    let (events_loop, window) = util::init("Rendering Text");
 
     let program = Program::new(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC);
 
-    let mesh = opengl::primitives::cube();
+    let array = AttribArrayBuilder::new()
+        .push("position", 3, AttribType::Position)
+        .push("uv", 2, AttribType::Uv)
+        .build();
+
+    let mut mesh = Mesh::empty(array);
+
+    mesh.push_vertices( vec![
+        vec![0.0, 0.0, 0.0,  0.0, 0.0],
+        vec![1.0, 0.0, 0.0,  1.0, 0.0],
+        vec![1.0, 1.0, 0.0,  1.0, 1.0],
+        vec![0.0, 1.0, 0.0,  0.0, 1.0],
+    ]);
+
+    mesh.push_faces( vec![
+        Face::new(0, 1, 2),
+        Face::new(2, 3, 0),
+    ]);
 
     let vbo = &mesh.to_element_array_buffer_vbo();
 
@@ -65,7 +83,7 @@ fn main() {
 
     program.uniform_matrix4fv_by_name("projection", &projection, false);
 
-    let tex = Texture::from_pnm_file("assets/crate.pnm");
+    let tex = Texture::from_pnm_file("assets/font.pnm");
     tex.bind();
 
     unsafe {
@@ -75,20 +93,18 @@ fn main() {
     program.uniform_1i_by_name("tex", 0);
 
     let mut view = Matrix4::new();
-    view.look_at(&Vector3::new(2.0, 2.0, 3.0), linalg::ZERO, linalg::Z_UP);
+    view.look_at(&Vector3::new(0.0, -2.0, 3.0), linalg::ZERO, linalg::Z_UP);
 
     unsafe {
         gl::Viewport(0, 0, width as i32, height as i32);
 
         gl::Enable(gl::DEPTH_TEST);
 
-        gl::ClearColor(0.0, 0.0, 0.0, 1.0);
+        gl::ClearColor(0.0, 0.5, 0.5, 1.0);
     }
 
     let mut model     = Matrix4::new();
     let mut modelview = Matrix4::new();
-
-    let mut alpha = 0.0;
 
     let mut running = true;
     while running {
@@ -99,8 +115,6 @@ fn main() {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            model.rotation(alpha, linalg::Z_UP);
-
             modelview.copy(&view);
             modelview.mult(&model);
 
@@ -110,8 +124,7 @@ fn main() {
             opengl::error();
         }
 
-        alpha += 0.01;
-
         window.swap_buffers().unwrap();
     }
 }
+
