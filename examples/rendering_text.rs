@@ -42,7 +42,7 @@ void main() {
 
 fn main() {
     println!("started!");
-    let (events_loop, window) = util::init("Textured Cube");
+    let (events_loop, window) = util::init();
 
     let program = Program::new(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC);
 

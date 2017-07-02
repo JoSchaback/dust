@@ -13,7 +13,7 @@ use dust::opengl;
 fn main() {
     println!("started!");
 
-    let (events_loop, window) = util::init();
+    let (events_loop, window) = util::init("Lighted Sphere");
 
     let shader = LightShader::new();
 

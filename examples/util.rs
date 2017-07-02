@@ -4,11 +4,11 @@ extern crate gl;
 use dust::opengl;
 
 /// initiatlize glutin window
-pub fn init() -> (glutin::EventsLoop, glutin::Window){
+pub fn init(title: &str) -> (glutin::EventsLoop, glutin::Window){
     let events_loop = glutin::EventsLoop::new();
 
     let window = glutin::WindowBuilder::new()
-        .with_title("Lighted Sphere".to_string())
+        .with_title(title.to_string())
         .with_dimensions(1024, 768)
         .with_vsync()
         .build(&events_loop)
