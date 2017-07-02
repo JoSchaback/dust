@@ -415,3 +415,30 @@ impl Texture {
         Texture::new(width as u32, height as u32, rgb_image)
     }
 }
+
+/// A Sprite is a sub-area on a Texture. Primarily used for Font Bitmaps and GUI-elements.
+/// Textures have their origin at the bottom left, such that Sprites are positioned accordingly.
+#[allow(dead_code)]
+struct Sprite {
+
+    x      : u32,
+    y      : u32,
+
+    width  : u32,
+    height : u32,
+
+}
+
+#[allow(dead_code)]
+impl Sprite {
+
+    pub fn new(x: u32, y: u32, width: u32, height: u32) -> Sprite {
+        Sprite {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+        }
+    }
+
+}
