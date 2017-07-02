@@ -372,23 +372,46 @@ impl Texture {
         let split_vec : Vec<&str> = size_string.split(" ").collect();
 
         // width and height of the image to be loaded in pixels
-        let width  = split_vec[0].parse::<u32>().unwrap();
-        let height = split_vec[1].parse::<u32>().unwrap();
+        let width  = split_vec[0].parse::<usize>().unwrap();
+        let height = split_vec[1].parse::<usize>().unwrap();
 
         let (max_value_string, i) = Texture::parse_ascii_line(&buffer, index);
         index = i + 1;
 
         assert_eq!(max_value_string, "255", "while parsing the PNM file, I expect the 'max value' to be 255, but it turned out to be {}", max_value_string);
 
-        let size_in_bytes = (width * height * 3) as usize;
+        let size_in_bytes = width * height * 3;
 
         let mut rgb_image : Vec<u8> = Vec::with_capacity( size_in_bytes );
 
+        unsafe { rgb_image.set_len(size_in_bytes); }
+
+        // tracks x and y of source image while reading
+        let mut source_x : usize = 0;
+        let mut source_y : usize = 0;
+
+        // the index in the target buffer where to write, includes the vertical flip
+        let mut write_index : usize = 0;
+
         while index < buffer.len() {
-            rgb_image.push( buffer[index] );
-            index += 1;
+
+            //println!("writing buffer, width: {}, height: {}, source_x: {}, source_y: {}, index: {}, size_in_bytes: {}", width, height, source_x, source_y, index, size_in_bytes);
+
+            // we have to flip the y axis of the image
+            rgb_image[ width*(height-source_y-1)*3 + source_x*3 + 0] = buffer[index + 0];
+            rgb_image[ width*(height-source_y-1)*3 + source_x*3 + 1] = buffer[index + 1];
+            rgb_image[ width*(height-source_y-1)*3 + source_x*3 + 2] = buffer[index + 2];
+            index += 3;
+
+            source_x += 1;
+
+            if source_x >= width {
+                source_x  = 0;
+                source_y += 1;
+            }
+
         }
 
-        Texture::new(width, height, rgb_image)
+        Texture::new(width as u32, height as u32, rgb_image)
     }
 }
