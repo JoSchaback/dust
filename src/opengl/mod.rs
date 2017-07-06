@@ -297,6 +297,13 @@ impl Texture {
         self.height
     }
 
+    pub fn width_as_f32(&self) -> f32 {
+        self.width as f32
+    }
+
+    pub fn height_as_f32(&self) -> f32 {
+        self.height as f32
+    }
 
     pub fn parameters(mag_filter: gl::types::GLenum,
                       min_filter: gl::types::GLenum,
@@ -452,6 +459,109 @@ impl Sprite {
         }
     }
 
+
+    pub fn x(&self) -> u32 {
+        self.x
+    }
+
+    pub fn y(&self) -> u32 {
+        self.y
+    }
+
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn height(&self) -> u32 {
+        self.height
+    }
+
+    pub fn x_as_f32(&self) -> f32 {
+        self.x as f32
+    }
+
+    pub fn y_as_f32(&self) -> f32 {
+        self.y as f32
+    }
+
+    pub fn width_as_f32(&self) -> f32 {
+        self.width as f32
+    }
+
+    pub fn height_as_f32(&self) -> f32 {
+        self.height as f32
+    }
+}
+
+#[allow(dead_code)]
+pub struct Font {
+    tex : Texture,
+    map : HashMap<char, Sprite>,
+}
+
+#[allow(dead_code)]
+impl Font {
+
+    pub fn new(tex: Texture, fnt_file: &str) -> Font {
+        Font {
+            tex : tex,
+            map : Font::load_fnt_file(fnt_file),
+        }
+    }
+
+    pub fn mesh(&self, text:&str) -> mesh::Mesh {
+        let mut x : f32 = -2.0;
+        let scale : f32 = 0.005;
+        let mut vertex_count = 0;
+
+        let array = AttribArrayBuilder::new()
+            .push("position", 3, AttribType::Position)
+            .push("uv", 2, AttribType::Uv)
+            .build();
+
+        let mut mesh = mesh::Mesh::empty(array);
+
+        for character in text.chars() {
+
+            if character == ' ' {
+                let sprite = self.map.get(&'a').unwrap();
+                x += sprite.width_as_f32() * scale;
+                continue;
+            }
+
+            let sprite = self.map.get(&character).unwrap();
+
+            let uv_x = sprite.x_as_f32() / self.tex.width_as_f32();
+            let uv_y = (self.tex.height()-sprite.y()-sprite.height()) as f32 / self.tex.height_as_f32();
+
+            let uv_width  = sprite.width_as_f32()  / self.tex.width_as_f32();
+            let uv_height = sprite.height_as_f32() / self.tex.height_as_f32();
+
+            let height = sprite.height_as_f32() * scale;
+            let width  = sprite.width_as_f32()  * scale;
+
+          //  println!("{}, {}, {}", x, uv_x, uv_y);
+
+            mesh.push_vertices( vec![
+                vec![x+0.0,   0.0,    0.0,  uv_x,            uv_y],
+                vec![x+width, 0.0,    0.0,  uv_x + uv_width, uv_y],
+                vec![x+width, height, 0.0,  uv_x + uv_width, uv_y + uv_height],
+                vec![x+0.0,   height, 0.0,  uv_x,            uv_y + uv_height],
+            ]);
+
+            x += width;
+            vertex_count += 4;
+
+            mesh.push_faces( vec![
+                mesh::Face::new(vertex_count - 4, vertex_count - 3, vertex_count - 2),
+                mesh::Face::new(vertex_count - 2, vertex_count - 1, vertex_count - 4),
+            ]);
+
+        }
+
+        mesh
+    }
+
     pub fn load_fnt_file(filename: &str) -> HashMap<char, Sprite>{
         use std::error::Error;
         use std::fs::File;
@@ -476,7 +586,6 @@ impl Sprite {
             Err(why) => panic!("couldn't read {}: {}", display, why.description()),
             Ok(_)    => (),//print!("{} contains:\n{}", display, content),
         }
-
 
         let mut map : HashMap<char, Sprite> = HashMap::new();
 
@@ -522,21 +631,7 @@ impl Sprite {
         map
     }
 
-    pub fn x(&self) -> u32 {
-        self.x
+    pub fn tex(&self) -> &Texture {
+        &self.tex
     }
-
-    pub fn y(&self) -> u32 {
-        self.y
-    }
-
-    pub fn width(&self) -> u32 {
-        self.width
-    }
-
-    pub fn height(&self) -> u32 {
-        self.height
-    }
-
 }
-

@@ -4,7 +4,7 @@ extern crate dust;
 
 mod util;
 
-use dust::opengl::{Texture, AttribArrayBuilder, AttribType, Sprite};
+use dust::opengl::{Texture, AttribArrayBuilder, AttribType, Sprite, Font};
 use dust::opengl::mesh::{Face,Mesh};
 use dust::opengl::program::Program;
 use dust::linalg::{Matrix4, Vector3};
@@ -47,57 +47,13 @@ fn main() {
 
     let program = Program::new(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC);
 
-    let array = AttribArrayBuilder::new()
-        .push("position", 3, AttribType::Position)
-        .push("uv", 2, AttribType::Uv)
-        .build();
+    //let map = Sprite::load_fnt_file("assets/font.fnt");
 
-    let map = Sprite::load_fnt_file("assets/font.fnt");
-
-    let mut mesh = Mesh::empty(array);
     let tex = Texture::from_pnm_file("assets/font.pnm");
 
-    let mut x : f32 = -2.0;
-    let scale : f32 = 0.005;
-    let mut vertex_count = 0;
+    let font = Font::new(tex, "assets/font.fnt");
 
-    for character in "Hallo, das hier ist ein Test! Das funktioniert ganz gut.".chars() {
-
-        if character == ' ' {
-            let sprite = map.get(&'a').unwrap();
-            x += sprite.width() as f32 * scale;
-            continue;
-        }
-
-        let sprite = map.get(&character).unwrap();
-
-        let uv_x = sprite.x() as f32 / tex.width() as f32;
-        let uv_y = (tex.height()-sprite.y()-sprite.height()) as f32 / tex.height() as f32;
-
-        let uv_width  = sprite.width() as f32 / tex.width() as f32;
-        let uv_height = sprite.height() as f32 / tex.height() as f32;
-
-        let height = sprite.height() as f32 * scale;
-        let width  = sprite.width() as f32 * scale;
-
-        println!("{}, {}, {}", x, uv_x, uv_y);
-
-        mesh.push_vertices( vec![
-            vec![x+0.0,   0.0,   0.0,  uv_x,            uv_y],
-            vec![x+width, 0.0,   0.0,  uv_x + uv_width, uv_y],
-            vec![x+width, height, 0.0,  uv_x + uv_width, uv_y + uv_height],
-            vec![x+0.0,   height, 0.0,  uv_x,            uv_y + uv_height],
-        ]);
-
-        x += width;
-        vertex_count += 4;
-
-        mesh.push_faces( vec![
-            Face::new(vertex_count - 4, vertex_count - 3, vertex_count - 2),
-            Face::new(vertex_count - 2, vertex_count - 1, vertex_count - 4),
-        ]);
-
-    }
+    let mesh = font.mesh("Hello darkness my old friend.");
 
     let vbo = &mesh.to_element_array_buffer_vbo();
 
@@ -117,7 +73,7 @@ fn main() {
     program.uniform_matrix4fv_by_name("projection", &projection, false);
 
 
-    tex.bind();
+    font.tex().bind();
 
     unsafe {
         gl::ActiveTexture(gl::TEXTURE0);
