@@ -5,6 +5,7 @@ pub mod program;
 pub mod mesh;
 
 use std::mem;
+use std::collections::HashMap;
 
 /// Type of a Vertex Attribute, used by Mesh to know which parts of the Vertex vectors hold the
 /// position, normal, UV, etc.
@@ -288,6 +289,15 @@ impl Texture {
         }
     }
 
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn height(&self) -> u32 {
+        self.height
+    }
+
+
     pub fn parameters(mag_filter: gl::types::GLenum,
                       min_filter: gl::types::GLenum,
                       wrap_s    : gl::types::GLenum,
@@ -419,7 +429,8 @@ impl Texture {
 /// A Sprite is a sub-area on a Texture. Primarily used for Font Bitmaps and GUI-elements.
 /// Textures have their origin at the bottom left, such that Sprites are positioned accordingly.
 #[allow(dead_code)]
-struct Sprite {
+#[derive(Debug)]
+pub struct Sprite {
 
     x      : u32,
     y      : u32,
@@ -441,4 +452,91 @@ impl Sprite {
         }
     }
 
+    pub fn load_fnt_file(filename: &str) -> HashMap<char, Sprite>{
+        use std::error::Error;
+        use std::fs::File;
+        use std::io::prelude::*;
+        use std::path::Path;
+
+        // Create a path to the desired file
+        let path    = Path::new(filename);
+        let display = path.display();
+
+        // Open the path in read-only mode, returns `io::Result<File>`
+        let mut file = match File::open(&path) {
+            // The `description` method of `io::Error` returns a string that
+            // describes the error
+            Err(why) => panic!("couldn't open {}: {}", display, why.description()),
+            Ok(file) => file,
+        };
+
+        // Read the file contents into a string, returns `io::Result<usize>`
+        let mut content = String::new();
+        match file.read_to_string(&mut content) {
+            Err(why) => panic!("couldn't read {}: {}", display, why.description()),
+            Ok(_)    => (),//print!("{} contains:\n{}", display, content),
+        }
+
+
+        let mut map : HashMap<char, Sprite> = HashMap::new();
+
+        for line in content.lines() {
+
+            if line.starts_with("char ") {
+                let mut id     : u8 = 0;
+                let mut x      : u32 = 0;
+                let mut y      : u32 = 0;
+                let mut width  : u32 = 0;
+                let mut height : u32 = 0;
+
+                //println!("line! {}", line);
+                let sss : String = line.chars().skip("char ".len()).take(line.len()-"char ".len()).collect();
+                //println!("sub line [{}]", sss);
+
+                for s in sss.split_whitespace() {
+                    //println!("s as in as [{}]", s);
+                    let key_value_pair: Vec<&str> = s.split("=").collect();
+                    let key   = key_value_pair[0];
+                    let value = key_value_pair[1];
+                    //println!("grummel {} -> {}", key, value);
+                    match key {
+                        "id"     => id     = value.parse::<u8>().unwrap(),
+                        "x"      => x      = value.parse::<u32>().unwrap(),
+                        "y"      => y      = value.parse::<u32>().unwrap(),
+                        "width"  => width  = value.parse::<u32>().unwrap(),
+                        "height" => height = value.parse::<u32>().unwrap(),
+                        _        => {},
+                    }
+                }
+
+                if width == 0 {
+                    continue;
+                }
+
+                //println!("buiding sprite outt of {}, {}, {}, {}, {}", x, y, width, height, id as char);
+                let sprite = Sprite::new(x, y, width, height);
+                map.insert(id as char, sprite);
+            }
+        }
+
+        map
+    }
+
+    pub fn x(&self) -> u32 {
+        self.x
+    }
+
+    pub fn y(&self) -> u32 {
+        self.y
+    }
+
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn height(&self) -> u32 {
+        self.height
+    }
+
 }
+
