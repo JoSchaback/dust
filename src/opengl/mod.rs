@@ -408,7 +408,7 @@ impl Texture {
         let mut source_y : usize = 0;
 
         // the index in the target buffer where to write, includes the vertical flip
-        let mut write_index : usize = 0;
+        //let mut write_index : usize = 0;
 
         while index < buffer.len() {
 
@@ -510,7 +510,8 @@ impl Font {
     }
 
     pub fn mesh(&self, text:&str) -> mesh::Mesh {
-        let mut x : f32 = -2.0;
+        let mut x : f32 = 0.0;
+        let mut y : f32 = 0.0;
         let scale : f32 = 0.005;
         let mut vertex_count = 0;
 
@@ -526,6 +527,11 @@ impl Font {
             if character == ' ' {
                 let sprite = self.map.get(&'a').unwrap();
                 x += sprite.width_as_f32() * scale;
+                continue;
+            } else if character == '\n' {
+                let sprite = self.map.get(&'a').unwrap();
+                y -= sprite.height_as_f32() * scale;
+                x = 0.0;
                 continue;
             }
 
@@ -543,10 +549,10 @@ impl Font {
           //  println!("{}, {}, {}", x, uv_x, uv_y);
 
             mesh.push_vertices( vec![
-                vec![x+0.0,   0.0,    0.0,  uv_x,            uv_y],
-                vec![x+width, 0.0,    0.0,  uv_x + uv_width, uv_y],
-                vec![x+width, height, 0.0,  uv_x + uv_width, uv_y + uv_height],
-                vec![x+0.0,   height, 0.0,  uv_x,            uv_y + uv_height],
+                vec![x+0.0,   y+0.0,    0.0,  uv_x,            uv_y],
+                vec![x+width, y+0.0,    0.0,  uv_x + uv_width, uv_y],
+                vec![x+width, y+height, 0.0,  uv_x + uv_width, uv_y + uv_height],
+                vec![x+0.0,   y+height, 0.0,  uv_x,            uv_y + uv_height],
             ]);
 
             x += width;
@@ -558,6 +564,8 @@ impl Font {
             ]);
 
         }
+
+        mesh.translate(0.0, -y, 0.0);
 
         mesh
     }

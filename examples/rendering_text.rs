@@ -4,6 +4,8 @@ extern crate dust;
 
 mod util;
 
+use glutin::GlContext;
+
 use dust::opengl::{Texture, AttribArrayBuilder, AttribType, Sprite, Font};
 use dust::opengl::mesh::{Face,Mesh};
 use dust::opengl::program::Program;
@@ -43,7 +45,7 @@ void main() {
 
 fn main() {
     println!("started!");
-    let (events_loop, window) = util::init("Rendering Text");
+    let (mut events_loop, gl_window) = util::init("Rendering Text");
 
     let program = Program::new(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC);
 
@@ -53,7 +55,7 @@ fn main() {
 
     let font = Font::new(tex, "assets/font.fnt");
 
-    let mesh = font.mesh("Hello darkness my old friend.");
+    let mesh = font.mesh("Hello,\nthis is a multiline example!\nit works great.");
 
     let vbo = &mesh.to_element_array_buffer_vbo();
 
@@ -65,7 +67,7 @@ fn main() {
     position.attrib_array_pointer( program.attrib_location("position").unwrap() ) ;
     uv.attrib_array_pointer( program.attrib_location("uv").unwrap() ) ;
 
-    let (width, height) = window.get_inner_size_pixels().unwrap();
+    let (width, height) = gl_window.get_inner_size_pixels().unwrap();
 
     let mut projection = Box::new(Matrix4::new());
     projection.projection(45.0, width as f32, height as f32, 0.1, 100.0);
@@ -96,11 +98,9 @@ fn main() {
     let mut modelview = Matrix4::new();
 
     let mut running = true;
-    while running {
-        events_loop.poll_events(|event| {
-            running = !util::shall_stop(event);
-        });
 
+    events_loop.run_forever(|event| {
+        let control_flow = util::shall_stop(event);
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
@@ -113,7 +113,8 @@ fn main() {
             opengl::error();
         }
 
-        window.swap_buffers().unwrap();
-    }
+        let _ = gl_window.swap_buffers().unwrap();
+        control_flow
+    });
 }
 
