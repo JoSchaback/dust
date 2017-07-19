@@ -3,7 +3,7 @@ extern crate glutin;
 extern crate dust;
 
 mod util;
-
+use glutin::GlContext;
 use dust::opengl::{Texture};
 use dust::opengl::program::Program;
 use dust::linalg::{Matrix4, Vector3};
@@ -42,7 +42,7 @@ void main() {
 
 fn main() {
     println!("started!");
-    let (events_loop, window) = util::init("Textured Cube");
+    let (mut events_loop, window) = util::init("Textured Cube");
 
     let program = Program::new(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC);
 
@@ -91,9 +91,11 @@ fn main() {
     let mut alpha = 0.0;
 
     let mut running = true;
+
     while running {
+
         events_loop.poll_events(|event| {
-            running = !util::shall_stop(event);
+            running = util::continue_running(event);
         });
 
         unsafe {

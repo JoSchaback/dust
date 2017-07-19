@@ -8,12 +8,13 @@ use dust::opengl::program::Program;
 use dust::linalg::{Matrix4, Vector3, Vector4, Matrix3};
 use dust::linalg;
 use dust::opengl;
+use glutin::GlContext;
 
 /// Draws a colored sphere, lit by a single light source
 fn main() {
     println!("started!");
 
-    let (events_loop, window) = util::init("Lighted Sphere");
+    let (mut events_loop, window) = util::init("Lighted Sphere");
 
     let shader = LightShader::new();
 
@@ -71,7 +72,7 @@ fn main() {
     let mut running   = true;
     while running {
         events_loop.poll_events(|event| {
-            running = !util::shall_stop(event);
+            running = util::continue_running(event);
         });
 
         unsafe {

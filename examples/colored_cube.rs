@@ -7,7 +7,9 @@ use dust::linalg::{Matrix4, Vector3};
 use dust::linalg;
 use dust::opengl;
 use std::boxed::Box;
+use glutin::GlContext;
 
+mod util;
 const VERTEX_SHADER_SRC : &'static [u8] = b"
 #version 100
 
@@ -35,20 +37,7 @@ void main() {
 
 fn main() {
     println!("started!");
-    let events_loop = glutin::EventsLoop::new();
-
-    let window = glutin::WindowBuilder::new()
-        .with_title("Colored Cube".to_string())
-        .with_dimensions(1024, 768)
-        .with_vsync()
-        .build(&events_loop)
-        .unwrap();
-
-    unsafe {
-        window.make_current()
-    }.unwrap();
-
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    let (mut event_loop, gl_window) = util::init("Colored Cubes");
 
     let program = Program::new(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC);
 
@@ -64,7 +53,7 @@ fn main() {
     position.attrib_array_pointer( program.attrib_location("position").unwrap() ) ;
     color.attrib_array_pointer( program.attrib_location("color").unwrap() ) ;
 
-    let (width, height) = window.get_inner_size_pixels().unwrap();
+    let (width, height) = gl_window.get_inner_size_pixels().unwrap();
 
     println!("size: {} x {}", &width, &height);
 
@@ -88,25 +77,12 @@ fn main() {
     let mut modelview = Box::new(Matrix4::new());
 
     let mut alpha = 0.0;
-
     let mut running = true;
+
     while running {
-        events_loop.poll_events(|event1| {
-            //println!("stuff: {:?}", event1);
-            match event1 {
-                glutin::Event::WindowEvent { event, .. } => match event {
-                    glutin::WindowEvent::Closed => {
-                        running = false;
-                    },
 
-                    glutin::WindowEvent::KeyboardInput(_, _, Some(glutin::VirtualKeyCode::Escape), _) => {
-                        //println!("GRRR");
-                        running = false;
-                    },
-
-                    _ => ()
-                }
-            }
+        event_loop.poll_events(|event| {
+            running = util::continue_running(event);
         });
 
         unsafe {
@@ -125,6 +101,7 @@ fn main() {
 
         alpha += 0.01;
 
-        window.swap_buffers().unwrap();
+        let _ = gl_window.swap_buffers().unwrap();
     }
+
 }

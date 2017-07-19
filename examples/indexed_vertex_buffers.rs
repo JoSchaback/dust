@@ -2,11 +2,14 @@ extern crate gl;
 extern crate glutin;
 extern crate dust;
 
+mod util;
+
 use dust::opengl::program::Program;
 use dust::linalg::{Matrix4, Vector3};
 use dust::linalg;
 use dust::opengl;
 use std::boxed::Box;
+use glutin::GlContext;
 
 const VERTEX_SHADER_SRC : &'static [u8] = b"
 #version 100
@@ -36,22 +39,8 @@ void main() {
 
 fn main() {
     println!("started!");
-    let events_loop = glutin::EventsLoop::new();
 
-    let window = glutin::WindowBuilder::new()
-        .with_title("Indexed Vertex Buffers".to_string())
-        .with_dimensions(1024, 768)
-        .with_vsync()
-        .build(&events_loop)
-        .unwrap();
-
-    unsafe {
-        window.make_current()
-    }.unwrap();
-
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
-
-    opengl::error();
+    let (mut events_loop, window) = util::init("Indexed Vertex Buffers");
 
     let program = Program::new(VERTEX_SHADER_SRC, FRAGMENT_SHADER_SRC);
 
@@ -98,21 +87,7 @@ fn main() {
     let mut running = true;
     while running {
         events_loop.poll_events(|event1| {
-            //println!("stuff: {:?}", event1);
-            match event1 {
-                glutin::Event::WindowEvent { event, .. } => match event {
-                    glutin::WindowEvent::Closed => {
-                        running = false;
-                    },
-
-                    glutin::WindowEvent::KeyboardInput(_, _, Some(glutin::VirtualKeyCode::Escape), _) => {
-                        //println!("GRRR");
-                        running = false;
-                    },
-
-                    _ => ()
-                }
-            }
+            running = util::continue_running(event1);
         });
 
         unsafe {

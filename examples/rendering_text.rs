@@ -95,12 +95,18 @@ fn main() {
     }
 
     let mut model     = Matrix4::new();
+    model.translation(-1.0, 0.0, 0.0);
+
     let mut modelview = Matrix4::new();
 
     let mut running = true;
 
-    events_loop.run_forever(|event| {
-        let control_flow = util::shall_stop(event);
+    while running {
+
+        events_loop.poll_events(|event| {
+            running = util::continue_running(event);
+        });
+
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
@@ -114,7 +120,6 @@ fn main() {
         }
 
         let _ = gl_window.swap_buffers().unwrap();
-        control_flow
-    });
+    }
 }
 
